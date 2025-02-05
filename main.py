@@ -20,17 +20,22 @@ def get_db():
 
 
 @app.post("/department/", response_model=schemas.Department)
-def create_department(department: schemas.DepartmentCreate, db: Session = Depends(get_db)):
+def create_department(department: schemas.DepartmentCreate, db: Session = Depends(get_db), credentials: HTTPBasicCredentials = Depends(security)):
 
-    # db_user = crud.authenticate(db, credentials)
+    db_user = crud.authenticate(db, credentials)
     
-    # if not db_user:
-    #     raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not db_user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
     return crud.create_department(db=db, department=department)
 
 @app.get("/departments/", response_model=list[schemas.Department])
-def read_departments(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_departments(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), credentials: HTTPBasicCredentials = Depends(security)):
+
+    db_user = crud.authenticate(db, credentials)
+    
+    if not db_user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
     departments = crud.get_departments(db, skip=skip, limit=limit)
     return departments
